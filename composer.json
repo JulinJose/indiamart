@@ -1,0 +1,12 @@
+{
+    "name": "julinjose/bk",
+    "authors": [
+        {
+            "name": "Julin",
+            "email": "julinjose20@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.3"
+    }
+}
