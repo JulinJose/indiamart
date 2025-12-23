@@ -1,29 +1,96 @@
-<?php
+<!-- <?php
+// gateway/payment_request.php
 
-//echo "<pre>";print_r($_POST);die();
-$admin_data = file_get_contents("./worldline_AdminData.json");
-$mer_array = json_decode($admin_data, true);
+function generatePaynimoRequest(array $input)
+{
+    $configPath = __DIR__ . '/worldline_AdminData.json';
 
-$val = $_POST;
+    if (!file_exists($configPath)) {
+        throw new Exception("Worldline config file missing");
+    }
 
-if($mer_array['typeOfPayment'] == "TEST"){
-	$val['amount'] = 1;
+    $config = json_decode(file_get_contents($configPath), true);
+    if (!$config) {
+        throw new Exception("Invalid Worldline config JSON");
+    }
+
+    // Required fields
+    $data = array_merge([
+        "mrctCode" => $config['merchantCode'],
+        "txn_id" => "",
+        "amount" => 0,
+        "accNo" => "",
+        "custID" => "",
+        "mobNo" => "",
+        "email" => "",
+        "debitStartDate" => "",
+        "debitEndDate" => "",
+        "maxAmount" => "",
+        "amountType" => "",
+        "frequency" => "",
+        "cardNumber" => "",
+        "expMonth" => "",
+        "expYear" => "",
+        "cvvCode" => "",
+        "returnUrl" => "",
+        "name" => "",
+        "scheme" => "",
+        "currency" => $config['currency'] ?? 'INR',
+        "accountName" => "",
+        "ifscCode" => "",
+        "accountType" => "",
+        "SALT" => $config['salt']
+    ], $input);
+
+    // TEST MODE
+    if ($config['typeOfPayment'] === 'TEST') {
+        $data['amount'] = 1;
+    }
+
+    $hashString = implode("|", [
+        $data['mrctCode'],
+        $data['txn_id'],
+        $data['amount'],
+        $data['accNo'],
+        $data['custID'],
+        $data['mobNo'],
+        $data['email'],
+        $data['debitStartDate'],
+        $data['debitEndDate'],
+        $data['maxAmount'],
+        $data['amountType'],
+        $data['frequency'],
+        $data['cardNumber'],
+        $data['expMonth'],
+        $data['expYear'],
+        $data['cvvCode'],
+        $data['SALT']
+    ]);
+
+    $hash = hash('sha512', $hashString);
+
+    return [
+        "hash" => $hash,
+        "data" => [
+            $data['mrctCode'],
+            $data['txn_id'],
+            $data['amount'],
+            $data['debitStartDate'],
+            $data['debitEndDate'],
+            $data['maxAmount'],
+            $data['amountType'],
+            $data['frequency'],
+            $data['custID'],
+            $data['mobNo'],
+            $data['email'],
+            $data['accNo'],
+            $data['returnUrl'],
+            $data['name'],
+            $data['scheme'],
+            $data['currency'],
+            $data['accountName'],
+            $data['ifscCode'],
+            $data['accountType']
+        ]
+    ];
 }
-
-if($mer_array['enableEmandate'] == 1 && $mer_array['enableSIDetailsAtMerchantEnd'] == 1){
-	$val['debitStartDate'] = date("d-m-Y");
-	$val['debitEndDate'] = date("d-m-Y", strtotime($val['debitEndDate']));
-}
-
-$datastring=$val['mrctCode']."|".$val['txn_id']."|".$val['amount']."|".$val['accNo']."|".$val['custID']."|".$val['mobNo']."|".$val['email']."|".$val['debitStartDate']."|".$val['debitEndDate']."|".$val['maxAmount']."|".$val['amountType']."|".$val['frequency']."|".$val['cardNumber']."|".$val['expMonth']."|".$val['expYear']."|".$val['cvvCode']."|".$val['SALT'];
-
-$hashed = hash('sha512',$datastring);  
-
-$data=array("hash"=>$hashed,"data"=>array($val['mrctCode'],$val['txn_id'],$val['amount'],$val['debitStartDate'],$val['debitEndDate'],$val['maxAmount'],$val['amountType'],$val['frequency'],$val['custID'],$val['mobNo'],$val['email'],$val['accNo'],$val['returnUrl'],$val['name'],$val['scheme'],$val['currency'],$val['accountName'],$val['ifscCode'],$val['accountType']));
-
-echo json_encode($data);
-
-?>
-
-
-

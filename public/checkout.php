@@ -169,7 +169,7 @@ foreach ($items as $it) {
 
 
 // ---- Clear cart ----
-// mysqli_query($db, "DELETE FROM cart WHERE user_id={$user['id']}");
+mysqli_query($db, "DELETE FROM cart WHERE user_id={$user['id']}");
 
 /* ---------------- CASH ON DELIVERY RESPONSE ---------------- */
 
