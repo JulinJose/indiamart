@@ -5,7 +5,10 @@ include "auth.php";
 include __DIR__ . "/gateway/payment_request.php";
 
 $user = authUser($db);
-$user_id = $user['id'] ?? 0;
+
+$user_id     = (int)$user['id'];
+$user_email  = $user['email'];
+$user_mobile = $user['phone'];
 
 if ($user_id <= 0) {
     echo json_encode([
@@ -176,12 +179,16 @@ mysqli_query($db, "DELETE FROM cart WHERE user_id={$user['id']}");
 if ($payment_method === 'Cash on Delivery') {
 
     echo json_encode([
-        "status" => "success",
-        "message" => "Order placed successfully (Cash on Delivery)",
-        "order_id" => $order_id,
-        "payment_method" => "Cash on Delivery",
-        "order_status" => "received",
-        "amount" => $final_total
+        "status"         => "success",
+        "message"        => "Order placed successfully",
+        "order_id"       => $order_id,
+        "payment_method"=> "Cash on Delivery",
+        "order_status"  => "received",
+        "amount"        => $final_total,
+        "customer" => [
+            "email"  => $user_email,
+            "phone" => $user_mobile
+        ]
     ]);
     exit;
 }
@@ -191,19 +198,25 @@ $paymentPayload = generatePaynimoRequest([
     "txn_id"    => $txn_id,
     "amount"    => $final_total,
     "custID"    => $user_id,
-    "mobNo"     => "9999999999",
-    "email"     => "customer@example.com",
+    "mobNo"     => $user_mobile,
+    "email"     => $user_email,
     "returnUrl" => "http://localhost/bk/public/gateway/payment_callback.php",
     "name"      => "Order #$order_id"
 ]);
 
 echo json_encode([
-    "status" => "success",
-    "message" => "Redirect to payment",
-    "order_id" => $order_id,
-    "txn_id" => $txn_id,
-    "payment_method" => "Online Payment",
-    "order_status" => "pending",
-    "payment_payload" => $paymentPayload
+    "status"         => "success",
+    "message"        => "Redirect to payment",
+    "order_id"       => $order_id,
+    "txn_id"         => $txn_id,
+    "payment_method"=> "Online Payment",
+    "order_status"  => "pending",
+    "amount"        => $final_total,
+    "customer" => [
+        "email"  => $user_email,
+        "phone" => $user_mobile
+    ],
+    "payment_payload"=> $paymentPayload
 ]);
+
 exit;
