@@ -2,7 +2,7 @@
     "merchantCode": "T206030",
     "merchantSchemeCode": "test",
     "salt": "3976262521OAOQBJ",
-    "typeOfPayment": "TEST",
+    "typeOfPayment": "LIVE",
     "currency": "INR",
     "primaryColor": "#3977b7",
     "secondaryColor": "#FFFFFF",

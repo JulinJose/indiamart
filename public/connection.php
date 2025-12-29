@@ -3,8 +3,8 @@ ob_start();
 session_start();
 
 // mysql_close();
-//$db=mysqli_connect("localhost","root","","spices") or die(mysqli_error());
- $db=mysqli_connect("localhost:3306","user_hotel","pass_hotel","db_hotel") or die(mysqli_error()) ;
+$db=mysqli_connect("localhost","root","","db_hotel") or die(mysqli_error());
+//  $db=mysqli_connect("localhost:3306","user_hotel","pass_hotel","db_hotel") or die(mysqli_error()) ;
 
 function msg($a,$b)
 {

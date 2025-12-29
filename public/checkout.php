@@ -200,7 +200,7 @@ $paymentPayload = generatePaynimoRequest([
     "custID"    => $user_id,
     "mobNo"     => $user_mobile,
     "email"     => $user_email,
-    "returnUrl" => "http://localhost/bk/public/gateway/payment_callback.php",
+    "returnUrl" => "https://design-pods.com/indiamart/public/gateway/payment_callback.php",
     "name"      => "Order #$order_id"
 ]);
 
