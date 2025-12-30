@@ -5,7 +5,7 @@ include "auth.php";
 
 /* ---------------- AUTH ---------------- */
 $user = authUser($db);
-$user_id = $user['id'] ?? 0;
+$user_id = (int)($user['id'] ?? 0);
 
 if ($user_id <= 0) {
     echo json_encode([
@@ -29,10 +29,10 @@ if ($product_id <= 0 || $quantity <= 0) {
     exit;
 }
 
-/* ---------------- PRODUCT CHECK ---------------- */
+/* ---------------- PRODUCT FETCH (NO STOCK CHECK) ---------------- */
 $product_q = mysqli_query(
     $db,
-    "SELECT id, name, new_price, stock, img 
+    "SELECT id, name, new_price 
      FROM products 
      WHERE id = $product_id"
 );
@@ -47,14 +47,6 @@ if (!$product) {
     exit;
 }
 
-if ($product['stock'] < $quantity) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Not enough stock"
-    ]);
-    exit;
-}
-
 /* ---------------- CALCULATION ---------------- */
 $total_amount = $product['new_price'] * $quantity;
 
@@ -63,7 +55,7 @@ mysqli_begin_transaction($db);
 
 try {
 
-    // Orders table
+    // Insert into orders table
     mysqli_query($db, "
         INSERT INTO orders (
             user_id,
@@ -80,7 +72,7 @@ try {
 
     $order_id = mysqli_insert_id($db);
 
-    // Order items table
+    // Insert into order_items table
     mysqli_query($db, "
         INSERT INTO order_items (
             order_id,
@@ -95,13 +87,6 @@ try {
         )
     ");
 
-    // Reduce stock
-    mysqli_query($db, "
-        UPDATE products
-        SET stock = stock - $quantity
-        WHERE id = $product_id
-    ");
-
     mysqli_commit($db);
 
 } catch (Throwable $e) {
@@ -114,18 +99,19 @@ try {
     ]);
     exit;
 }
+
 /* ---------------- MERCHANT KEY ---------------- */
 /*
   Paynimo:
   merchant_key == merchantCode
   SAFE to expose
 */
-$merchant_key = "T206030"; // your merchantCode
+$merchant_key = "T206030";
 
 /* ---------------- RESPONSE ---------------- */
 echo json_encode([
-    "status" => "success",
-    "order_id" => $order_id,
+    "status"       => "success",
+    "order_id"     => $order_id,
     "merchant_key" => $merchant_key
 ]);
 
