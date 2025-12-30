@@ -8,11 +8,14 @@ $user_id = $user['id'] ?? 0;
 $category_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($category_id <= 0) {
-    echo json_encode(["status" => "error", "message" => "Category ID is required"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Category ID is required"
+    ]);
     exit;
 }
 
-//  Fetch products with weight info
+/* ---------------- FETCH PRODUCTS (ONLY IN-STOCK) ---------------- */
 $sql = "SELECT 
             p.id, 
             p.name, 
@@ -25,24 +28,32 @@ $sql = "SELECT
             w.t1 AS weight_name
         FROM products p
         LEFT JOIN weight w ON p.wid = w.id
-        WHERE p.cid = $category_id";
+        WHERE p.cid = $category_id
+          AND p.stock > 0";   // ✅ HIDE EMPTY STOCK PRODUCTS
 
 $res = mysqli_query($db, $sql);
 
 if (!$res) {
-    echo json_encode(["status" => "error", "message" => "Database query failed"]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database query failed"
+    ]);
     exit;
 }
 
-//  Fetch user favourites (to reduce repeated queries)
+/* ---------------- FETCH USER FAVOURITES ---------------- */
 $fav_ids = [];
 if ($user_id > 0) {
-    $fav_query = mysqli_query($db, "SELECT product_id FROM favourites WHERE user_id = $user_id");
+    $fav_query = mysqli_query(
+        $db,
+        "SELECT product_id FROM favourites WHERE user_id = $user_id"
+    );
     while ($fav = mysqli_fetch_assoc($fav_query)) {
         $fav_ids[] = (int)$fav['product_id'];
     }
 }
 
+/* ---------------- BUILD RESPONSE ---------------- */
 $products = [];
 while ($row = mysqli_fetch_assoc($res)) {
     $product_id = (int)$row['id'];
@@ -53,13 +64,13 @@ while ($row = mysqli_fetch_assoc($res)) {
         "description"  => $row['description'],
         "price"        => (float)$row['new_price'],
         "stock"        => (int)$row['stock'],
-        "weight"       => $row['weight_name'] ?? null, //  From joined weight table
+        "weight"       => $row['weight_name'] ?? null,
         "image"        => "https://design-pods.com/indiamart/admin/assets/images/products/" . $row['img'],
         "is_favourite" => in_array($product_id, $fav_ids)
     ];
 }
 
-//  Send JSON response
+/* ---------------- FINAL RESPONSE ---------------- */
 echo json_encode([
     "status" => "success",
     "category_id" => $category_id,
