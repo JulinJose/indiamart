@@ -270,15 +270,15 @@
 												<input class="form-control" placeholder="Material" type="text"  required="">
 											</div> -->
 											<div class="col-lg">
-												<input class="form-control" placeholder="Package Information" type="text"  name="j" required="">
+												<input class="form-control" placeholder="Package Information" type="text"  name="j" >
 											</div>
 											<div class="col-lg">
-												<input class="form-control" placeholder="Manufacturer" type="text"  name="k" required="">
+												<input class="form-control" placeholder="Manufacturer" type="text"  name="k">
 											</div>
 											
 											
 											<div class="col-lg mg-t-10 mg-lg-t-0">
-												<input class="form-control" placeholder="Item Part Number" type="text"  name="l" required="">
+												<input class="form-control" placeholder="Item Part Number" type="text"  name="l">
 											</div>											
 										</div>
 
